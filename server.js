@@ -6,10 +6,25 @@ const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server);
 
-// Enable CORS for all routes
-app.use(cors());
+// Configure Socket.IO with CORS
+const io = socketIO(server, {
+  cors: {
+    origin: "*", // Allow all origins
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
+  }
+});
+
+// Enable CORS for Express routes with all allowed options
+app.use(cors({
+  origin: "*", // Allow all origins
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(express.static("public"));
 
@@ -207,6 +222,9 @@ app.delete("/api/all", (req, res) => {
   io.emit("images-cleared");
   res.json({ status: "success", message: "All data cleared" });
 });
+
+// Add OPTIONS pre-flight response for all routes
+app.options('*', cors());
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
